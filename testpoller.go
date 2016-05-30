@@ -1,7 +1,6 @@
 package testpoller
 
 import (
-	"sync"
 	"time"
 
 	"golang.org/x/net/context"
@@ -13,7 +12,6 @@ const defaultInterval = 100 * time.Millisecond
 // default is 100 milliseconds.
 type Poller struct {
 	interval time.Duration
-	once     sync.Once
 }
 
 // New returns new Poller with interval set to 100 milliseconds.
@@ -33,11 +31,9 @@ func (p Poller) WithInterval(d time.Duration) Poller {
 // Poll executes f with interval until it returns true or error. It returns
 // error if f returns error or ctx is cancelled.
 func (p Poller) Poll(ctx context.Context, f func() (bool, error)) error {
-	p.once.Do(func() {
-		if p.interval == 0 {
-			p.interval = defaultInterval
-		}
-	})
+	if p.interval == 0 {
+		p.interval = defaultInterval
+	}
 	res, err := f()
 	if err != nil {
 		return err
